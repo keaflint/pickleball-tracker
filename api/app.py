@@ -1298,8 +1298,17 @@ limiter = Limiter(
 @limiter.limit("5 per minute")
 @app.route('/login', methods=['POST'])
 def login_post():
-    # ... existing login code
-    pass  # Add this if the function is empty
+    email = request.form.get('email')
+    password = request.form.get('password')
+    remember = True if request.form.get('remember') else False
+
+    user = User.query.filter_by(email=email).first()
+    if not user or not user.check_password(password):
+        flash('Please check your login details and try again.', 'error')
+        return redirect(url_for('login'))
+
+    login_user(user, remember=remember)
+    return redirect(url_for('home'))
 
 def maintenance_mode():
     return os.environ.get('MAINTENANCE_MODE', 'false').lower() == 'true'
