@@ -63,9 +63,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql://', 1)
 
-# Add SSL requirement for Supabase
+# Add SSL requirement and connection pooling for Supabase
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    "connect_args": {"sslmode": "require"}
+    "connect_args": {
+        "sslmode": "require"
+    },
+    "pool_size": 5,
+    "max_overflow": 2,
+    "pool_timeout": 30,
+    "pool_recycle": 1800,
 }
 
 print(f"Final SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")  # Debug print

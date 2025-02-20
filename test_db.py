@@ -1,49 +1,33 @@
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 import os
-from dotenv import load_dotenv, find_dotenv
-from urllib.parse import quote_plus
+from dotenv import load_dotenv
 
-# Clear existing environment variables
-if 'DATABASE_URL' in os.environ:
-    del os.environ['DATABASE_URL']
+load_dotenv()
 
-# Find and load the .env file with override
-env_file = find_dotenv()
-print(f"\nLoading environment from: {env_file}")
-load_dotenv(env_file, override=True)
+def test_connection():
+    try:
+        database_url = os.getenv('DATABASE_URL')
+        print(f"Testing connection with URL: {database_url}")
+        
+        engine = create_engine(
+            database_url,
+            connect_args={
+                "sslmode": "require"
+            }
+        )
+        
+        with engine.connect() as connection:
+            result = connection.execute("SELECT version()")
+            version = result.scalar()
+            print("Successfully connected to the database!")
+            print(f"Database version: {version}")
+            
+    except Exception as e:
+        print(f"Error connecting to the database: {e}")
+        print("\nPlease verify these settings:")
+        print("1. Check if your database password is correct")
+        print("2. Verify that your database user has the correct permissions")
+        print("3. Make sure your database is accessible from your current location")
 
-# Get the actual URL from environment
-actual_url = os.environ.get('DATABASE_URL')
-
-print("\nEnvironment Variables:")
-print("-" * 50)
-print(f"DATABASE_URL: {actual_url}")
-print("-" * 50)
-
-try:
-    # Create engine with SSL required and connection pooling settings
-    engine = create_engine(
-        actual_url,
-        connect_args={
-            "sslmode": "require",
-            "application_name": "pickleball_tracker"
-        },
-        pool_size=5,
-        max_overflow=10
-    )
-    
-    # Try to connect using proper SQLAlchemy query syntax
-    with engine.connect() as connection:
-        result = connection.execute(text("SELECT current_database(), current_user"))
-        db, user = result.fetchone()
-        print("\nConnection successful!")
-        print(f"Connected to database: {db}")
-        print(f"Connected as user: {user}")
-
-except Exception as e:
-    print("\nConnection failed!")
-    print(f"Error: {str(e)}")
-    
-    # Print debug info
-    print("\nDebug Info:")
-    print(f"DATABASE_URL being used: {actual_url}") 
+if __name__ == "__main__":
+    test_connection() 
