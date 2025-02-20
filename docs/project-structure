@@ -1,0 +1,14 @@
+pickleball-tracker/
+├── app.py
+├── templates/
+│   ├── base.html
+│   ├── index.html
+│   ├── games.html
+│   └── stats.html
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   └── main.js
+│   └── images/
+└── requirements.txt 

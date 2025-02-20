@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Your Statistics</h2>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3>{{ total_games }}</h3>
+                                <p>Total Games</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3>{{ wins }}</h3>
+                                <p>Wins</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3>{{ "%.1f"|format(win_rate) }}%</h3>
+                                <p>Win Rate</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3>{{ current_user.ranking_points|round|int }}</h3>
+                                <p>Ranking Points</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="game-type-stats">
+                                <h4>Singles Games</h4>
+                                <p>{{ singles_games }} games played</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="game-type-stats">
+                                <h4>Doubles Games</h4>
+                                <p>{{ doubles_games }} games played</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-card {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.stat-card h3 {
+    color: #2563eb;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card p {
+    color: #6b7280;
+    margin: 0;
+}
+
+.game-type-stats {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.game-type-stats h4 {
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.game-type-stats p {
+    color: #6b7280;
+    margin: 0;
+}
+
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card-title {
+    color: #111827;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %} 

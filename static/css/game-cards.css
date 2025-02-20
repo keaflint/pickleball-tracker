@@ -1,0 +1,125 @@
+.game-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.game-date {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.game-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.team {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.team.winner {
+    background: #ecfdf5;
+}
+
+.team a {
+    color: #111827;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.team a:hover {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.score {
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: #111827;
+    margin-left: 1rem;
+}
+
+.vs {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.game-type {
+    color: #6b7280;
+    font-size: 0.75rem;
+    text-align: right;
+    margin-top: 0.25rem;
+}
+
+.game-actions {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.verified-icon {
+    font-size: 0.75rem;
+    color: #2563eb;
+    margin-left: 0.25rem;
+}
+
+/* Comments styles */
+.comments-section {
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.comment-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.comment-item:last-child {
+    border-bottom: none;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+}
+
+.comment-author {
+    font-weight: 500;
+    color: #111827;
+}
+
+.comment-date {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.comment-content {
+    color: #374151;
+}
+
+/* Add new styles for players container */
+.team-players {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.player {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+} 

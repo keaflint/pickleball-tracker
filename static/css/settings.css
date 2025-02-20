@@ -1,0 +1,60 @@
+.settings-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.settings-section {
+    background: var(--bg-card);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.settings-header {
+    margin-bottom: 1.5rem;
+}
+
+.settings-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.settings-description {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.settings-form {
+    margin-top: 1.5rem;
+}
+
+.settings-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1.5rem 0;
+}
+
+.toggle-setting {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.setting-label {
+    flex: 1;
+}
+
+.setting-label h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.setting-label p {
+    margin: 0.25rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+} 

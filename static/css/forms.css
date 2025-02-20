@@ -1,0 +1,70 @@
+/* Form Containers */
+.form-container {
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Input Styles */
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Checkbox and Radio */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-check-input {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Form Validation */
+.is-invalid {
+    border-color: var(--error);
+}
+
+.invalid-feedback {
+    color: var(--error);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+} 

@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="games-section">
+    <div class="container">
+        <div class="card form-container">
+            <div class="section-header">
+                <h2>Add New Game</h2>
+                <p class="subtitle">Record your latest pickleball match</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('new_game') }}" class="game-form">
+                <div class="form-sections">
+                    <!-- Basic Game Info -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date">Game Date</label>
+                            <input type="date" id="date" name="date" 
+                                   required class="date-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="game_type">Game Type</label>
+                            <select id="game_type" name="game_type" required onchange="togglePlayers()">
+                                <option value="singles">Singles</option>
+                                <option value="doubles">Doubles</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Teams Section -->
+                    <div class="teams-container">
+                        <!-- Team 1 -->
+                        <div class="team-section card">
+                            <div class="team-header">
+                                <h3>Your Team</h3>
+                                <div class="score-input">
+                                    <label for="team1_score">Score</label>
+                                    <input type="number" id="team1_score" name="team1_score" 
+                                           required min="0" max="99" class="score-field">
+                                </div>
+                            </div>
+                            <div class="players-input">
+                                <div class="form-group">
+                                    <label for="player_1_0">Your Name</label>
+                                    <input type="hidden" id="player_1_0" name="player_1_0" value="{{ current_user.id }}">
+                                    <input type="text" value="{{ current_user.username }}" readonly class="player-input">
+                                </div>
+                                <div class="form-group doubles-only" style="display: none;">
+                                    <label for="player_1_1">Your Partner</label>
+                                    <input type="text" id="player_1_1_search" class="player-input"
+                                           placeholder="Search for player..." 
+                                           autocomplete="off">
+                                    <input type="hidden" id="player_1_1" name="player_1_1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="vs-divider">VS</div>
+
+                        <!-- Team 2 -->
+                        <div class="team-section card">
+                            <div class="team-header">
+                                <h3>Opponent Team</h3>
+                                <div class="score-input">
+                                    <label for="team2_score">Score</label>
+                                    <input type="number" id="team2_score" name="team2_score" 
+                                           required min="0" max="99" class="score-field">
+                                </div>
+                            </div>
+                            <div class="players-input">
+                                <div class="form-group">
+                                    <label for="player_2_0">Opponent 1</label>
+                                    <input type="text" id="player_2_0_search" class="player-input"
+                                           placeholder="Search for player..." 
+                                           autocomplete="off"
+                                           required>
+                                    <input type="hidden" id="player_2_0" name="player_2_0">
+                                </div>
+                                <div class="form-group doubles-only" style="display: none;">
+                                    <label for="player_2_1">Opponent 2</label>
+                                    <input type="text" id="player_2_1_search" class="player-input"
+                                           placeholder="Search for player..." 
+                                           autocomplete="off">
+                                    <input type="hidden" id="player_2_1" name="player_2_1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="is_public" id="is_public">
+                            <span>Share this game publicly</span>
+                        </label>
+                        <p class="help-text">Public games will appear in the discover feed for all users</p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="button button-primary">Save Game</button>
+                        <button type="reset" class="button button-secondary">Clear Form</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="section-header">
+            <h2>Recent Games</h2>
+            <p class="subtitle">Your latest matches</p>
+        </div>
+
+        <div class="games-list">
+            {% if games %}
+                {% for game in games %}
+                <div class="game-card">
+                    <div class="game-header">
+                        <div class="game-meta">
+                            <span class="date">{{ game.date.strftime('%B %d, %Y') }}</span>
+                            <span class="game-type">{{ game.game_type.title() }}</span>
+                            {% if game.is_public %}
+                                <span class="public-badge">Public</span>
+                            {% endif %}
+                        </div>
+                        {% if game.creator_id == current_user.id %}
+                        <div class="game-actions">
+                            <a href="{{ url_for('edit_game', game_id=game.id) }}" class="button button-small">Edit</a>
+                            <a href="{{ url_for('game_history', game_id=game.id) }}" class="button button-small">History</a>
+                            <form method="POST" action="{{ url_for('delete_game', game_id=game.id) }}" class="inline-form" 
+                                  onsubmit="return confirm('Are you sure you want to delete this game?');">
+                                <button type="submit" class="button button-small button-danger">Delete</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="game-details">
+                        <div class="team {% if game.winner == 1 %}winner{% endif %}">
+                            <div class="team-players">
+                                {% if game.creator_id == current_user.id %}
+                                    <span>You</span>
+                                {% else %}
+                                    <span>
+                                        <a href="{{ url_for('user_profile', username=game.get_player_name(1, 1)) }}">
+                                            {{ game.get_player_name(1, 1) }}
+                                        </a>
+                                    </span>
+                                {% endif %}
+                                {% if game.game_type == 'doubles' %}
+                                    <span>& 
+                                        <a href="{{ url_for('user_profile', username=game.get_player_name(1, 2)) }}">
+                                            {{ game.get_player_name(1, 2) }}
+                                        </a>
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <span class="score">{{ game.team1_score }}</span>
+                        </div>
+                        <div class="team {% if game.winner == 2 %}winner{% endif %}">
+                            <div class="team-players">
+                                <span>
+                                    <a href="{{ url_for('user_profile', username=game.get_player_name(2, 1)) }}">
+                                        {{ game.get_player_name(2, 1) }}
+                                    </a>
+                                </span>
+                                {% if game.game_type == 'doubles' %}
+                                    <span>& 
+                                        <a href="{{ url_for('user_profile', username=game.get_player_name(2, 2)) }}">
+                                            {{ game.get_player_name(2, 2) }}
+                                        </a>
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <span class="score">{{ game.team2_score }}</span>
+                        </div>
+                    </div>
+                    {% if game.notes %}
+                    <div class="game-notes">
+                        <p>{{ game.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state card">
+                    <p>No games recorded yet. Start by adding your first game!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function togglePlayers() {
+    const gameType = document.getElementById('game_type').value;
+    const doublesElements = document.querySelectorAll('.doubles-only');
+    
+    doublesElements.forEach(element => {
+        element.style.display = gameType === 'doubles' ? 'block' : 'none';
+        
+        // Clear inputs when switching game type
+        const inputs = element.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.value = '';
+            if (input.hasAttribute('required')) {
+                input.required = gameType === 'doubles';
+            }
+        });
+    });
+}
+
+// Handle player search and selection
+async function searchPlayers(query) {
+    try {
+        const response = await fetch(`/users/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        return data.users;
+    } catch (error) {
+        console.error('Error searching players:', error);
+        return [];
+    }
+}
+
+function setupPlayerSearch(searchInputId, hiddenInputId) {
+    const searchInput = document.getElementById(searchInputId);
+    const hiddenInput = document.getElementById(hiddenInputId);
+    let searchTimeout;
+    let searchResults;
+    
+    // Create and style the results dropdown
+    const dropdown = document.createElement('div');
+    dropdown.className = 'search-results';
+    dropdown.style.display = 'none';
+    dropdown.style.position = 'absolute';
+    dropdown.style.zIndex = '1000';
+    dropdown.style.backgroundColor = 'white';
+    dropdown.style.border = '1px solid #ddd';
+    dropdown.style.borderRadius = '4px';
+    dropdown.style.maxHeight = '200px';
+    dropdown.style.overflowY = 'auto';
+    dropdown.style.width = '100%';
+    searchInput.parentNode.style.position = 'relative';
+    searchInput.parentNode.appendChild(dropdown);
+    
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const query = searchInput.value.trim();
+        
+        if (query.length < 2) {
+            dropdown.style.display = 'none';
+            return;
+        }
+        
+        searchTimeout = setTimeout(async () => {
+            searchResults = await searchPlayers(query);
+            dropdown.innerHTML = '';
+            
+            searchResults.forEach(user => {
+                const div = document.createElement('div');
+                div.className = 'search-result-item';
+                div.style.padding = '8px 12px';
+                div.style.cursor = 'pointer';
+                div.style.borderBottom = '1px solid #eee';
+                div.textContent = user.username;
+                
+                div.addEventListener('mouseover', () => {
+                    div.style.backgroundColor = '#f5f5f5';
+                });
+                
+                div.addEventListener('mouseout', () => {
+                    div.style.backgroundColor = 'white';
+                });
+                
+                div.addEventListener('click', () => {
+                    searchInput.value = user.username;
+                    hiddenInput.value = user.id;
+                    dropdown.style.display = 'none';
+                });
+                
+                dropdown.appendChild(div);
+            });
+            
+            dropdown.style.display = searchResults.length ? 'block' : 'none';
+        }, 300);
+    });
+    
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    togglePlayers();
+    
+    // Setup player search for each input
+    setupPlayerSearch('player_1_1_search', 'player_1_1');
+    setupPlayerSearch('player_2_0_search', 'player_2_0');
+    setupPlayerSearch('player_2_1_search', 'player_2_1');
+    
+    document.getElementById('game_type').addEventListener('change', togglePlayers);
+});
+</script>
+{% endblock %}

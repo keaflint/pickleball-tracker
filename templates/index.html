@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>Track Your Pickleball Games</h1>
+        <p>Keep track of your matches, stats, and progress all in one place</p>
+        
+        {% if current_user.is_authenticated %}
+            <div class="cta-buttons">
+                <a href="{{ url_for('new_game') }}" class="button button-primary">Record Game</a>
+                <a href="{{ url_for('stats') }}" class="button button-secondary">View Stats</a>
+            </div>
+        {% else %}
+            <div class="cta-buttons">
+                <a href="{{ url_for('register') }}" class="button button-primary">Get Started</a>
+                <a href="{{ url_for('login') }}" class="button button-secondary">Login</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if current_user.is_authenticated and recent_games %}
+    <div class="recent-activity card">
+        <h2>Recent Games</h2>
+        <div class="games-list">
+            {% for game in recent_games %}
+            <div class="game-card">
+                <!-- Same game card structure as before -->
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock %} 

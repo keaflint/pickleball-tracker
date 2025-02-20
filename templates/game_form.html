@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="form-container">
+        <h2 class="form-title">{{ 'Edit Game' if edit_mode else 'Record New Game' }}</h2>
+        
+        <form method="POST" class="game-form">
+            {{ form.csrf_token }}
+            {{ form.player_1_0 }}
+            {{ form.player_1_1 }}
+            {{ form.player_2_0 }}
+            {{ form.player_2_1 }}
+            
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    {{ form.date.label(class="form-label") }}
+                    {{ form.date(class="form-control", type="date") }}
+                </div>
+                <div class="form-group col-md-6">
+                    {{ form.game_type.label(class="form-label") }}
+                    {{ form.game_type(class="form-select", onchange="toggleDoublesFields()") }}
+                </div>
+            </div>
+
+            <div class="teams-container">
+                <div class="team-section">
+                    <h3>Team 1</h3>
+                    <div class="player-inputs">
+                        <div class="form-group">
+                            <label class="form-label">Player 1</label>
+                            <input type="text" class="form-control player-search" 
+                                   data-team="1" data-position="0" 
+                                   value="{{ current_user.username }}" readonly>
+                        </div>
+                        <div class="form-group doubles-only" style="display: none;">
+                            <label class="form-label">Player 2</label>
+                            <input type="text" class="form-control player-search" 
+                                   data-team="1" data-position="1" 
+                                   placeholder="Enter teammate's name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.team1_score.label(class="form-label") }}
+                        {{ form.team1_score(class="form-control") }}
+                    </div>
+                </div>
+
+                <div class="team-section">
+                    <h3>Team 2</h3>
+                    <div class="player-inputs">
+                        <div class="form-group">
+                            <label class="form-label">Player 1</label>
+                            <input type="text" class="form-control player-search" 
+                                   data-team="2" data-position="0" 
+                                   placeholder="Enter opponent's name">
+                        </div>
+                        <div class="form-group doubles-only" style="display: none;">
+                            <label class="form-label">Player 2</label>
+                            <input type="text" class="form-control player-search" 
+                                   data-team="2" data-position="1" 
+                                   placeholder="Enter opponent's name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.team2_score.label(class="form-label") }}
+                        {{ form.team2_score(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    {{ form.is_public(class="form-check-input") }}
+                    {{ form.is_public.label(class="form-check-label") }}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    {{ 'Save Changes' if edit_mode else 'Record Game' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.form-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.teams-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.team-section {
+    background: var(--bg-main);
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.team-section h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+
+.player-inputs {
+    margin-bottom: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* Keep original functional styles */
+.ui-autocomplete {
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 1000;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Initialize date picker with yesterday's date
+    var yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    var yesterdayStr = yesterday.toISOString().split('T')[0];
+    $('#date').val(yesterdayStr);
+    
+    // Show/hide doubles fields based on initial game type
+    toggleDoublesFields();
+    
+    // Setup autocomplete for player search
+    $('.player-search:not([readonly])').autocomplete({
+        source: function(request, response) {
+            $.getJSON("{{ url_for('search_users') }}", {
+                q: request.term
+            }, function(data) {
+                response($.map(data, function(item) {
+                    return {
+                        label: item.label + (item.registered ? ' ✓' : ' (Guest)'),
+                        value: item.value,
+                        registered: item.registered
+                    };
+                }));
+            });
+        },
+        minLength: 1,
+        select: function(event, ui) {
+            var team = $(this).data('team');
+            var position = $(this).data('position');
+            $(`#player_${team}_${position}`).val(ui.item.value);
+            $(this).val(ui.item.value);
+            return false;
+        }
+    }).each(function() {
+        $(this).data("ui-autocomplete")._renderItem = function(ul, item) {
+            var $li = $("<li>");
+            var $div = $("<div>").addClass("ui-menu-item-wrapper");
+            
+            if (item.registered) {
+                $div.append(
+                    $("<span>").text(item.value),
+                    $("<i>").addClass("fas fa-circle-check ms-1").css("color", "#2563eb")
+                );
+            } else {
+                $div.append(
+                    $("<span>").text(item.value),
+                    $("<span>").text(" (Guest)").css("color", "#6b7280")
+                );
+            }
+            
+            return $li.append($div).appendTo(ul);
+        };
+    });
+
+    // Add validation for player names
+    $('form').on('submit', function(e) {
+        var gameType = $('#game_type').val();
+        var team1Player1 = $('.player-search[data-team="1"][data-position="0"]').val();
+        var team2Player1 = $('.player-search[data-team="2"][data-position="0"]').val();
+        
+        if (!team1Player1 || !team2Player1) {
+            e.preventDefault();
+            alert('Please enter names for all required players');
+            return false;
+        }
+        
+        if (gameType === 'doubles') {
+            var team1Player2 = $('.player-search[data-team="1"][data-position="1"]').val();
+            var team2Player2 = $('.player-search[data-team="2"][data-position="1"]').val();
+            
+            if (!team1Player2 || !team2Player2) {
+                e.preventDefault();
+                alert('Please enter names for all players in doubles game');
+                return false;
+            }
+        }
+        
+        // Update hidden fields before submit
+        $('.player-search').each(function() {
+            var team = $(this).data('team');
+            var position = $(this).data('position');
+            $(`#player_${team}_${position}`).val($(this).val());
+        });
+    });
+});
+
+function toggleDoublesFields() {
+    var gameType = $('#game_type').val();
+    if (gameType === 'doubles') {
+        $('.doubles-only').show();
+    } else {
+        $('.doubles-only').hide();
+        // Clear doubles fields when switching to singles
+        $('.doubles-only .player-search').val('');
+        $('#player_1_1, #player_2_1').val('');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="achievements-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Achievements</h2>
+            <p class="subtitle">Track your pickleball milestones</p>
+        </div>
+        
+        <div class="achievements-overview">
+            <div class="stat-card card">
+                <div class="stat-content">
+                    <div class="stat-item">
+                        <span class="stat-value">{{ user_achievements|length }}</span>
+                        <span class="stat-label">Achievements Earned</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ total_points }}</span>
+                        <span class="stat-label">Total Points</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="achievements-grid">
+            {% for achievement in all_achievements %}
+            <div class="achievement-card {% if achievement.id in earned_achievements %}earned{% endif %}">
+                <div class="achievement-icon">{{ achievement.icon }}</div>
+                <div class="achievement-info">
+                    <h3>{{ achievement.name }}</h3>
+                    <p>{{ achievement.description }}</p>
+                    <div class="achievement-meta">
+                        <span class="tier {{ achievement.tier }}">{{ achievement.tier|title }}</span>
+                        <span class="points">{{ achievement.points }} pts</span>
+                    </div>
+                    {% if achievement.id in earned_achievements %}
+                        <div class="earned-date">
+                            Earned {{ earned_dates[achievement.id].strftime('%B %d, %Y') }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %} 

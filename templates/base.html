@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track your pickleball games, stats, and progress with Pickleball Tracker">
+    <meta name="keywords" content="pickleball, tracking, stats, games, sports">
+    <meta name="author" content="Your Name">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="Pickleball Tracker">
+    <meta property="og:description" content="Track your pickleball games, stats, and progress">
+    <meta property="og:image" content="{{ url_for('static', filename='images/og-image.png', _external=True) }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai-chat.css') }}">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js for statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- jQuery UI -->
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- Add this after your existing CSS links -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/game-cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/games.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/comments.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/alerts.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modals.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stats.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('home') }}">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Pickleball Tracker Logo" class="logo-icon me-2" width="36" height="36">
+                    <span class="fw-semibold">Pickleball Tracker</span>
+                </a>
+                
+                {% if current_user.is_authenticated %}
+                <div class="navbar-nav mx-auto">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                        <i class="fas fa-chart-line me-1"></i>
+                        Dashboard
+                    </a>
+                    <a href="{{ url_for('new_game') }}" class="nav-link {% if request.endpoint == 'new_game' %}active{% endif %}">
+                        <i class="fas fa-table-tennis me-1"></i>
+                        Record Game
+                    </a>
+                    <a href="{{ url_for('all_games') }}" class="nav-link {% if request.endpoint == 'all_games' %}active{% endif %}">
+                        <i class="fas fa-list me-1"></i>
+                        All Games
+                    </a>
+                    <a href="{{ url_for('discover') }}" class="nav-link {% if request.endpoint == 'discover' %}active{% endif %}">
+                        <i class="fas fa-compass me-1"></i>
+                        Discover
+                    </a>
+                </div>
+
+                <div class="navbar-nav ms-auto">
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>
+                            {{ current_user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('settings') }}">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+                {% else %}
+                <div class="navbar-nav ms-auto">
+                    <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-primary ms-2">Register</a>
+                </div>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="py-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container text-center">
+            <p class="text-muted mb-0">&copy; 2024 Pickleball Tracker. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Custom Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+
+    <style>
+    body {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .navbar {
+        padding: 0.75rem 0;
+    }
+
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+
+    .nav-link {
+        padding: 0.5rem 1rem;
+        color: #4b5563;
+        font-weight: 500;
+    }
+
+    .nav-link.active {
+        color: #2563eb;
+    }
+
+    .nav-link:hover {
+        color: #2563eb;
+    }
+
+    .logo-icon {
+        font-size: 1.5rem;
+    }
+
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .card-title {
+        color: #111827;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Global link styles */
+    a {
+        color: #111827 !important;  /* Force black color */
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #2563eb !important;  /* Force blue on hover */
+        text-decoration: none;
+    }
+
+    /* Exception for buttons */
+    .btn {
+        color: inherit !important;
+    }
+
+    .btn-primary {
+        color: white !important;
+    }
+
+    .btn-outline-primary {
+        color: #2563eb !important;
+    }
+
+    .btn-outline-primary:hover {
+        color: white !important;
+    }
+
+    /* Exception for navbar links */
+    .navbar-brand {
+        color: #111827 !important;
+    }
+
+    .nav-link {
+        color: #4b5563 !important;
+    }
+
+    .nav-link:hover, 
+    .nav-link.active {
+        color: #2563eb !important;
+    }
+
+    /* Keep dropdown menu links visible */
+    .dropdown-item {
+        color: #111827 !important;
+    }
+
+    .dropdown-item:hover {
+        color: #2563eb !important;
+        background-color: #f3f4f6;
+    }
+    </style>
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="history-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Game History</h2>
+            <p class="subtitle">View changes and restore previous versions</p>
+        </div>
+
+        <div class="history-list">
+            {% for entry in game.history %}
+            <div class="history-card card">
+                <div class="history-header">
+                    <div class="history-meta">
+                        <span class="date">{{ entry.created_at.strftime('%B %d, %Y %I:%M %p') }}</span>
+                        <span class="action">{{ entry.action.title() }}</span>
+                    </div>
+                    {% if not entry.restored %}
+                    <a href="{{ url_for('restore_game', history_id=entry.id) }}" 
+                       class="button button-small"
+                       onclick="return confirm('Are you sure you want to restore this version?')">
+                        Restore
+                    </a>
+                    {% else %}
+                    <span class="restored-badge">Restored</span>
+                    {% endif %}
+                </div>
+                
+                <div class="history-details">
+                    <div class="change-summary">
+                        <h4>Changes:</h4>
+                        <ul>
+                            <li>Date: {{ entry.data.date }}</li>
+                            <li>Game Type: {{ entry.data.game_type.title() }}</li>
+                            <li>Score: {{ entry.data.team1_score }} - {{ entry.data.team2_score }}</li>
+                            <li>Players:
+                                {% if entry.data.game_type == 'singles' %}
+                                    {{ entry.data.players.team1_player1 }} vs {{ entry.data.players.team2_player1 }}
+                                {% else %}
+                                    {{ entry.data.players.team1_player1 }} & {{ entry.data.players.team1_player2 }} vs 
+                                    {{ entry.data.players.team2_player1 }} & {{ entry.data.players.team2_player2 }}
+                                {% endif %}
+                            </li>
+                            <li>Public: {{ 'Yes' if entry.data.is_public else 'No' }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %} 

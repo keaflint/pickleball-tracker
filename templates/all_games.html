@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>All Games</h2>
+        <a href="{{ url_for('new_game') }}" class="btn btn-primary">Record New Game</a>
+    </div>
+
+    {% if games %}
+        <div class="games-list">
+            {% for game in games %}
+                <div class="game-item">
+                    <div class="game-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="game-date">{{ game.date.strftime('%B %d, %Y') }}</span>
+                            <div>
+                                <span class="game-type badge bg-secondary">{{ game.game_type|title }}</span>
+                                {% if game.creator_id == current_user.id %}
+                                    <a href="{{ url_for('edit_game', game_id=game.id) }}" class="btn btn-sm btn-outline-primary ms-2">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2 delete-game" data-game-id="{{ game.id }}">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="game-content">
+                        <div class="team {% if game.winner == 1 %}winner{% endif %}">
+                            <div class="team-players">
+                                {% for pg in game.player_games %}
+                                    {% if pg.team_number == 1 %}
+                                        <div class="player">
+                                            {% if pg.user %}
+                                                <a href="{{ url_for('user_profile', username=pg.user.username) }}">
+                                                    {{ pg.user.username }}
+                                                    <i class="fas fa-circle-check verified-icon"></i>
+                                                </a>
+                                            {% else %}
+                                                {{ pg.player_name }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="score">{{ game.team1_score }}</span>
+                        </div>
+                        <div class="vs">vs</div>
+                        <div class="team {% if game.winner == 2 %}winner{% endif %}">
+                            <div class="team-players">
+                                {% for pg in game.player_games %}
+                                    {% if pg.team_number == 2 %}
+                                        <div class="player">
+                                            {% if pg.user %}
+                                                <a href="{{ url_for('user_profile', username=pg.user.username) }}">
+                                                    {{ pg.user.username }}
+                                                    <i class="fas fa-circle-check verified-icon"></i>
+                                                </a>
+                                            {% else %}
+                                                {{ pg.player_name }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="score">{{ game.team2_score }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center">No games recorded yet.</p>
+    {% endif %}
+</div>
+
+<script>
+$(document).ready(function() {
+    $('.delete-game').click(function() {
+        const gameId = $(this).data('game-id');
+        const gameItem = $(this).closest('.game-item');
+
+        $.ajax({
+            url: `/games/${gameId}/delete`,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token() }}"
+            },
+            success: function(response) {
+                if (response.success) {
+                    gameItem.fadeOut(function() {
+                        $(this).remove();
+                        if ($('.game-item').length === 0) {
+                            $('.games-list').html('<p class="text-center">No games recorded yet.</p>');
+                        }
+                    });
+                    
+                    $('.flash-messages').append(`
+                        <div class="alert alert-success alert-dismissible fade show">
+                            Game deleted successfully
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `);
+                }
+            },
+            error: function() {
+                $('.flash-messages').append(`
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        An error occurred while deleting the game
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `);
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.game-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.game-header {
+    margin-bottom: 1rem;
+}
+
+.game-date {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.game-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.team {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    background: #f9fafb;
+}
+
+.team.winner {
+    background: #ecfdf5;
+}
+
+.player {
+    margin-bottom: 0.25rem;
+}
+
+.score {
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: #111827;
+}
+
+.vs {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.verified-icon {
+    font-size: 0.75rem;
+    color: #2563eb;
+    margin-left: 0.25rem;
+}
+
+.btn-outline-danger {
+    color: #dc2626;
+    border-color: #dc2626;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc2626;
+    border-color: #dc2626;
+    color: white !important;
+}
+
+.modal-content {
+    border-radius: 0.5rem;
+}
+
+.modal-header {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-footer {
+    border-top: 1px solid #e5e7eb;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,47 @@
+<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main paddle outline - double line -->
+  <path fill="none" stroke="currentColor" stroke-width="15" 
+        d="M300 200 
+           C300 150 350 100 400 100
+           L600 100
+           C650 100 700 150 700 200
+           L700 400
+           C700 450 650 500 600 500
+           L400 500
+           C350 500 300 450 300 400
+           Z"/>
+           
+  <path fill="none" stroke="currentColor" stroke-width="15" 
+        d="M320 200 
+           C320 170 360 120 400 120
+           L600 120
+           C640 120 680 170 680 200
+           L680 400
+           C680 430 640 480 600 480
+           L400 480
+           C360 480 320 430 320 400
+           Z"/>
+
+  <!-- Handle -->
+  <path fill="none" stroke="currentColor" stroke-width="15"
+        d="M470 500 L470 800
+           M530 500 L530 800"/>
+
+  <!-- Grip lines -->
+  <path fill="none" stroke="currentColor" stroke-width="15"
+        d="M460 650 L540 650
+           M460 700 L540 700
+           M460 750 L540 750
+           M460 800 L540 800"/>
+
+  <!-- Holes -->
+  <circle cx="450" cy="200" r="15" fill="none" stroke="currentColor" stroke-width="10"/>
+  <circle cx="500" cy="200" r="15" fill="none" stroke="currentColor" stroke-width="10"/>
+  <circle cx="550" cy="200" r="15" fill="none" stroke="currentColor" stroke-width="10"/>
+  <circle cx="450" cy="300" r="15" fill="none" stroke="currentColor" stroke-width="10"/>
+  <circle cx="500" cy="300" r="15" fill="none" stroke="currentColor" stroke-width="10"/>
+  <circle cx="550" cy="300" r="15" fill="none" stroke="currentColor" stroke-width="10"/>
+  <circle cx="450" cy="400" r="15" fill="none" stroke="currentColor" stroke-width="10"/>
+  <circle cx="500" cy="400" r="15" fill="none" stroke="currentColor" stroke-width="10"/>
+  <circle cx="550" cy="400" r="15" fill="none" stroke="currentColor" stroke-width="10"/>
+</svg> 

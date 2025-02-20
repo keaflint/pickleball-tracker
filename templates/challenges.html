@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="challenges-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Challenges</h2>
+            <p class="subtitle">Manage your game challenges</p>
+        </div>
+
+        <!-- Received Challenges -->
+        <div class="challenges-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Received Challenges</h3>
+                </div>
+                <div class="challenges-list">
+                    {% if received_challenges %}
+                        {% for challenge in received_challenges %}
+                            <div class="challenge-card">
+                                <div class="challenge-info">
+                                    <div class="challenger">
+                                        <span class="username">{{ challenge.challenger.username }}</span>
+                                        <span class="game-type">{{ challenge.game_type|title }}</span>
+                                    </div>
+                                    {% if challenge.message %}
+                                        <p class="message">{{ challenge.message }}</p>
+                                    {% endif %}
+                                    <div class="challenge-meta">
+                                        <span class="date">{{ challenge.created_at.strftime('%B %d, %Y') }}</span>
+                                        <span class="expires">Expires {{ challenge.response_by.strftime('%B %d') }}</span>
+                                    </div>
+                                </div>
+                                <div class="challenge-actions">
+                                    <a href="{{ url_for('accept_challenge', challenge_id=challenge.id) }}" 
+                                       class="button button-small button-primary">Accept</a>
+                                    <a href="{{ url_for('decline_challenge', challenge_id=challenge.id) }}" 
+                                       class="button button-small button-secondary">Decline</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <p>No pending challenges</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sent Challenges -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Sent Challenges</h3>
+                </div>
+                <div class="challenges-list">
+                    {% if sent_challenges %}
+                        {% for challenge in sent_challenges %}
+                            <div class="challenge-card">
+                                <div class="challenge-info">
+                                    <div class="challenger">
+                                        <span class="username">{{ challenge.challenged.username }}</span>
+                                        <span class="game-type">{{ challenge.game_type|title }}</span>
+                                        <span class="status {{ challenge.status }}">{{ challenge.status|title }}</span>
+                                    </div>
+                                    {% if challenge.message %}
+                                        <p class="message">{{ challenge.message }}</p>
+                                    {% endif %}
+                                    <div class="challenge-meta">
+                                        <span class="date">{{ challenge.created_at.strftime('%B %d, %Y') }}</span>
+                                        {% if challenge.status == 'pending' %}
+                                            <span class="expires">Expires {{ challenge.response_by.strftime('%B %d') }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if challenge.status == 'pending' %}
+                                    <div class="challenge-actions">
+                                        <a href="{{ url_for('cancel_challenge', challenge_id=challenge.id) }}" 
+                                           class="button button-small button-secondary">Cancel</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <p>No challenges sent</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

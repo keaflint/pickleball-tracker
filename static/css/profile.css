@@ -1,0 +1,48 @@
+.profile-header {
+    margin-bottom: 2rem;
+}
+
+.profile-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.stat-item {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    border: 1px solid var(--border);
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.profile-bio {
+    color: var(--text-secondary);
+    margin: 1rem 0;
+    line-height: 1.6;
+} 

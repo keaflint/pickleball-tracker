@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="profile-header">
+        <h1>{{ user.username }}'s Profile</h1>
+        <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">Edit Profile</a>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Profile Info</h5>
+                    <p><strong>Username:</strong> {{ user.username }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Member since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}</p>
+                    <p><strong>Bio:</strong> {{ user.bio or 'No bio added yet.' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Stats Overview</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="stat-box">
+                                <h3>{{ total_games }}</h3>
+                                <p>Total Games</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-box">
+                                <h3>{{ wins }}</h3>
+                                <p>Wins</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-box">
+                                <h3>{{ "%.1f"|format(win_rate) }}%</h3>
+                                <p>Win Rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Games</h5>
+                    {% if recent_games %}
+                        <div class="recent-games-list">
+                            {% for game in recent_games %}
+                                <div class="game-item">
+                                    <div class="game-date">{{ game.date.strftime('%B %d, %Y') }}</div>
+                                    <div class="game-score">
+                                        Team 1: {{ game.team1_score }} - Team 2: {{ game.team2_score }}
+                                    </div>
+                                    <div class="game-result">
+                                        {% if game.get_user_team(current_user.id) == game.winner %}
+                                            <span class="badge bg-success">Won</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Lost</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No games played yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.stat-box {
+    text-align: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-box h3 {
+    margin: 0;
+    color: #2563eb;
+    font-size: 1.5rem;
+}
+
+.stat-box p {
+    margin: 0;
+    color: #6b7280;
+}
+
+.game-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.game-item:last-child {
+    border-bottom: none;
+}
+
+.game-date {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.game-score {
+    font-weight: 500;
+}
+</style>
+{% endblock %} 

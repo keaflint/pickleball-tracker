@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="games-section">
+    <div class="container">
+        <div class="card form-container">
+            <div class="section-header">
+                <h2>Edit Game</h2>
+                <p class="subtitle">Update game details</p>
+            </div>
+
+            <form method="POST" class="game-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="date">Game Date</label>
+                        <input type="date" id="date" name="date" 
+                               required
+                               class="date-input"
+                               value="{{ game.date.strftime('%Y-%m-%d') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="game_type">Game Type</label>
+                        <select id="game_type" name="game_type" required onchange="togglePlayers()">
+                            <option value="singles" {% if game.game_type == 'singles' %}selected{% endif %}>Singles</option>
+                            <option value="doubles" {% if game.game_type == 'doubles' %}selected{% endif %}>Doubles</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="teams-container">
+                    <!-- Team 1 -->
+                    <div class="team-section card">
+                        <div class="team-header">
+                            <h3>Team 1</h3>
+                            <div class="score-input">
+                                <label for="team1_score">Score</label>
+                                <input type="number" id="team1_score" name="team1_score" 
+                                       required min="0" max="99" class="score-field"
+                                       value="{{ game.team1_score }}">
+                            </div>
+                        </div>
+                        <div class="players-input">
+                            <div class="form-group">
+                                <label for="team1_player1">Player 1</label>
+                                <input type="text" id="team1_player1" name="team1_player1" 
+                                       class="player-input"
+                                       placeholder="Search for player..." 
+                                       autocomplete="off"
+                                       value="{{ players.get('team1_player1', '') }}"
+                                       required>
+                            </div>
+                            <div class="form-group doubles-only">
+                                <label for="team1_player2">Player 2</label>
+                                <input type="text" id="team1_player2" name="team1_player2" 
+                                       class="player-input"
+                                       placeholder="Search for player..." 
+                                       autocomplete="off"
+                                       value="{{ players.get('team1_player2', '') }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="vs-divider">VS</div>
+
+                    <!-- Team 2 -->
+                    <div class="team-section card">
+                        <div class="team-header">
+                            <h3>Team 2</h3>
+                            <div class="score-input">
+                                <label for="team2_score">Score</label>
+                                <input type="number" id="team2_score" name="team2_score" 
+                                       required min="0" max="99" class="score-field"
+                                       value="{{ game.team2_score }}">
+                            </div>
+                        </div>
+                        <div class="players-input">
+                            <div class="form-group">
+                                <label for="team2_player1">Player 1</label>
+                                <input type="text" id="team2_player1" name="team2_player1" 
+                                       class="player-input"
+                                       placeholder="Search for player..." 
+                                       autocomplete="off"
+                                       value="{{ players.get('team2_player1', '') }}"
+                                       required>
+                            </div>
+                            <div class="form-group doubles-only">
+                                <label for="team2_player2">Player 2</label>
+                                <input type="text" id="team2_player2" name="team2_player2" 
+                                       class="player-input"
+                                       placeholder="Search for player..." 
+                                       autocomplete="off"
+                                       value="{{ players.get('team2_player2', '') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group notes-section">
+                    <label for="notes">Game Notes</label>
+                    <textarea id="notes" name="notes" 
+                              placeholder="Add any notes about the game...">{{ game.notes or '' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="is_public" id="is_public" {% if game.is_public %}checked{% endif %}>
+                        <span>Share this game publicly</span>
+                    </label>
+                    <p class="help-text">Public games will appear in the discover feed for all users</p>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="button button-primary">Save Changes</button>
+                    <a href="{{ url_for('games_page') }}" class="button button-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %} 

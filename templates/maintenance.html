@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center">
+        <img src="{{ url_for('static', filename='images/maintenance.png') }}" alt="Maintenance" class="mb-4" style="max-width: 300px;">
+        <h1 class="mb-4">We'll Be Right Back!</h1>
+        <p class="lead mb-4">We're currently performing some maintenance to improve your experience.</p>
+        <p>Expected downtime: 30 minutes</p>
+    </div>
+</div>
+{% endblock %} 

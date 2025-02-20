@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="leaderboard-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Leaderboard</h2>
+            <p class="subtitle">Top players rankings</p>
+        </div>
+
+        <div class="leaderboard-grid">
+            <!-- Singles Leaderboard -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Singles Rankings</h3>
+                </div>
+                <div class="rankings-list">
+                    {% for player in top_singles %}
+                        <div class="ranking-card">
+                            <div class="rank">{{ loop.index }}</div>
+                            <div class="player-info">
+                                <a href="{{ url_for('user_profile', username=player.username) }}" 
+                                   class="username">{{ player.username }}</a>
+                                <div class="stats">
+                                    <span class="rating">{{ player.ranking_points }} pts</span>
+                                    <span class="games">{{ player.games_played_singles }} games</span>
+                                </div>
+                            </div>
+                            {% if player.id != current_user.id %}
+                                <a href="{{ url_for('challenge_player', username=player.username) }}" 
+                                   class="button button-small button-primary">Challenge</a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Doubles Leaderboard -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Doubles Rankings</h3>
+                </div>
+                <div class="rankings-list">
+                    {% for player in top_doubles %}
+                        <div class="ranking-card">
+                            <div class="rank">{{ loop.index }}</div>
+                            <div class="player-info">
+                                <a href="{{ url_for('user_profile', username=player.username) }}" 
+                                   class="username">{{ player.username }}</a>
+                                <div class="stats">
+                                    <span class="rating">{{ player.ranking_points }} pts</span>
+                                    <span class="games">{{ player.games_played_doubles }} games</span>
+                                </div>
+                            </div>
+                            {% if player.id != current_user.id %}
+                                <a href="{{ url_for('challenge_player', username=player.username) }}" 
+                                   class="button button-small button-primary">Challenge</a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

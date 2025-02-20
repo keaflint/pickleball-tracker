@@ -1,0 +1,43 @@
+.navbar {
+    padding: 0.75rem 0;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+}
+
+.navbar-brand {
+    font-size: 1.25rem;
+}
+
+.nav-link {
+    padding: 0.5rem 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.nav-link.active {
+    color: var(--primary);
+}
+
+.nav-link:hover {
+    color: var(--primary);
+}
+
+.logo-icon {
+    color: var(--primary);
+    transition: transform 0.2s ease;
+    width: 36px;
+    height: 36px;
+    filter: brightness(0);
+}
+
+.navbar-brand:hover .logo-icon {
+    transform: rotate(-15deg);
+}
+
+/* Make sure logo scales nicely on mobile */
+@media (max-width: 768px) {
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+    }
+} 

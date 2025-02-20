@@ -1,0 +1,39 @@
+.comments-section {
+    background: var(--bg-main);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.comment-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.comment-item:last-child {
+    border-bottom: none;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+}
+
+.comment-author {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.comment-date {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.comment-content {
+    color: var(--text-primary);
+}
+
+.comment-form {
+    margin-top: 1rem;
+} 
