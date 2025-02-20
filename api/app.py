@@ -26,6 +26,10 @@ import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import sys
+from dotenv import load_dotenv
+
+# Load environment variables first, before any other configuration
+load_dotenv(override=True)
 
 # Get the root directory
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -34,16 +38,20 @@ app = Flask(__name__,
            template_folder=str(ROOT_DIR / 'templates'),
            static_folder=str(ROOT_DIR / 'static'))
 
-# Debug prints
-print(f"Template folder: {app.template_folder}")
-print(f"Static folder: {app.static_folder}")
+# Debug prints for troubleshooting
+print("\nEnvironment Variables:")
+print("-" * 50)
+print(f"DATABASE_URL: {os.environ.get('DATABASE_URL')}")
+print(f"FLASK_APP: {os.environ.get('FLASK_APP')}")
+print(f"SECRET_KEY: {os.environ.get('SECRET_KEY')}")
+print("-" * 50)
 
 # Add this before other config
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 if not app.config['SECRET_KEY']:
     raise ValueError("No SECRET_KEY set for Flask application")
 
-# Make sure DATABASE_URL is set
+# After loading the DATABASE_URL
 database_url = os.environ.get('DATABASE_URL')
 if not database_url:
     raise ValueError("No DATABASE_URL set for Flask application")
@@ -54,6 +62,11 @@ print(f"Raw DATABASE_URL: {database_url}")  # Debug print
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql://', 1)
+
+# Add SSL requirement for Supabase
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "connect_args": {"sslmode": "require"}
+}
 
 print(f"Final SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")  # Debug print
 
@@ -120,12 +133,6 @@ talisman = Talisman(app,
     force_https=True
 )
 
-# Add SSL requirement for Supabase
-if not app.debug:
-    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        "connect_args": {"sslmode": "require"}
-    }
-
 # First, define the Follow model
 class Follow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -186,38 +193,38 @@ class GameHistory(db.Model):
 # Then define the User model
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128))
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(100), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    reset_token = db.Column(db.String(100), unique=True)
+    email_verified = db.Column(db.Boolean, default=False)
+    reset_token = db.Column(db.String(255), unique=True)
     reset_token_expiry = db.Column(db.DateTime)
-    remember_token = db.Column(db.String(100), unique=True)
+    remember_token = db.Column(db.String(255), unique=True)
     bio = db.Column(db.Text)
-    ranking_points = db.Column(db.Integer, default=1000)  # Starting ELO rating
+    ranking_points = db.Column(db.Integer, default=1000)
     rank_singles = db.Column(db.Integer)
     rank_doubles = db.Column(db.Integer)
     games_played_singles = db.Column(db.Integer, default=0)
     games_played_doubles = db.Column(db.Integer, default=0)
     
-    # Add relationships
-    games = db.relationship('Game', 
-                          secondary='player_game',
-                          backref=db.backref('players', lazy='dynamic'),
-                          lazy='dynamic')
-    
-    # Add followers relationship
+    # Fix relationships
+    created_games = db.relationship('Game', foreign_keys='Game.creator_id', backref='game_creator')
+    player_games = db.relationship('PlayerGame', backref='player')
+    user_comments = db.relationship('Comment', backref='author')
+    user_likes = db.relationship('Like', backref='user')
+    achievements = db.relationship('UserAchievement', backref='user')
+    settings = db.relationship('UserSettings', backref='user', uselist=False)
     followers = db.relationship('Follow',
-                             foreign_keys=[Follow.followed_id],
-                             backref=db.backref('followed', lazy='joined'),
-                             lazy='dynamic',
-                             cascade='all, delete-orphan')
-    
+                              foreign_keys=[Follow.followed_id],
+                              backref=db.backref('followed', lazy='joined'),
+                              lazy='dynamic',
+                              cascade='all, delete-orphan')
     following = db.relationship('Follow',
-                             foreign_keys=[Follow.follower_id],
-                             backref=db.backref('follower', lazy='joined'),
-                             lazy='dynamic',
-                             cascade='all, delete-orphan')
+                              foreign_keys=[Follow.follower_id],
+                              backref=db.backref('follower', lazy='joined'),
+                              lazy='dynamic',
+                              cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -238,20 +245,6 @@ class User(UserMixin, db.Model):
             return User.query.filter_by(email=email).first()
         except:
             return None
-
-    # Update the games relationship
-    created_games = db.relationship('Game', 
-                                  backref='game_creator',  # Changed from 'creator' to 'game_creator'
-                                  foreign_keys='Game.creator_id')
-    
-    participated_games = db.relationship('Game',
-                                       secondary='player_game',
-                                       backref=db.backref('participants', lazy=True),
-                                       overlaps="player_games,game",
-                                       viewonly=True)
-    player_games = db.relationship('PlayerGame',
-                                 backref='user',
-                                 overlaps="participated_games")
 
     def is_following(self, user):
         if not user:
@@ -304,9 +297,6 @@ class User(UserMixin, db.Model):
             self.ranking_points += K_FACTOR * (actual - expected)
         
         db.session.commit()
-
-    # Add settings relationship at the end of User model
-    settings = db.relationship('UserSettings', backref='user', uselist=False)
 
     def get_follower_count(self):
         return self.followers.count()
@@ -364,7 +354,7 @@ class PlayerGame(db.Model):
 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, nullable=False)
+    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     game_type = db.Column(db.String(10), nullable=False)  # 'singles' or 'doubles'
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     team1_score = db.Column(db.Integer, nullable=False)
@@ -373,9 +363,12 @@ class Game(db.Model):
     is_public = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Fix the relationship definition
-    creator = db.relationship('User', foreign_keys=[creator_id])
-    
+    # Fix relationships
+    players = db.relationship('PlayerGame', backref='game')
+    game_comments = db.relationship('Comment', backref='game')
+    game_likes = db.relationship('Like', backref='game')
+    history = db.relationship('GameHistory', backref='game')
+
     # Add new fields for better data organization
     location = db.Column(db.String(200))  # Where the game was played
     duration = db.Column(db.Integer)      # Duration in minutes
@@ -412,18 +405,6 @@ class Game(db.Model):
         """Check if this was a comeback win (down by 5+ points)"""
         return self.max_point_deficit >= 5
     
-    # Relationships with proper overlaps parameters
-    player_games = db.relationship('PlayerGame',
-                                 backref='game',
-                                 cascade="all, delete-orphan",
-                                 overlaps="participants")
-
-    # Add to Game model
-    history = db.relationship('GameHistory', 
-                             backref='game',
-                             cascade="all, delete-orphan",
-                             order_by="desc(GameHistory.created_at)")
-
     def get_player_name(self, team, position):
         player_game = PlayerGame.query.filter_by(
             game_id=self.id,
@@ -1207,13 +1188,11 @@ def delete_game(game_id):
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Add relationships
-    user = db.relationship('User', backref=db.backref('comments', lazy=True))
-    game = db.relationship('Game', backref=db.backref('comments', lazy=True))
+    # Remove relationship definitions (they're defined in User and Game models)
 
 class Like(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -1221,9 +1200,7 @@ class Like(db.Model):
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Add relationships
-    user = db.relationship('User', backref=db.backref('likes', lazy=True))
-    game = db.relationship('Game', backref=db.backref('likes', lazy=True))
+    # Remove relationship definitions (they're defined in User and Game models)
 
 # Add these routes after your existing routes
 @app.route('/games/<int:game_id>/comment', methods=['POST'])
@@ -1280,13 +1257,13 @@ def toggle_like(game_id):
 def handle_csrf_error(e):
     return render_template('errors/400.html', message="CSRF token validation failed. Please try again."), 400
 
-# Initialize database
+# Initialize database and create tables
 with app.app_context():
     try:
         db.create_all()
-        print("Database created successfully!")
+        print("Database tables created successfully!")
     except Exception as e:
-        print(f"Error creating database: {e}")
+        print(f"Error creating database tables: {e}")
 
 # Add rate limiting
 limiter = Limiter(
