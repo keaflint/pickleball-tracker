@@ -17,7 +17,7 @@ from wtforms import StringField, DateField, SelectField, IntegerField, BooleanFi
 from wtforms.validators import DataRequired, NumberRange, Email, EqualTo
 from jinja2 import UndefinedError
 from urllib.parse import urlparse
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, CSRFError
 from sqlalchemy.sql import text
 from flask_talisman import Talisman
 from flask_limiter import Limiter
@@ -40,7 +40,19 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
 app.config['WTF_CSRF_ENABLED'] = True
 app.config['WTF_CSRF_SECRET_KEY'] = os.urandom(24)
 
-# Initialize CSRF protection right after creating the app
+# Update session configuration for serverless environment
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=timedelta(days=7),
+    # Add these new settings
+    SESSION_COOKIE_NAME='session',  # Explicit name
+    WTF_CSRF_TIME_LIMIT=None,  # Remove time limit on CSRF tokens
+    WTF_CSRF_SSL_STRICT=False  # Needed for Vercel
+)
+
+# Initialize CSRF protection after config update
 csrf = CSRFProtect(app)
 
 db = SQLAlchemy(app)
@@ -79,14 +91,6 @@ talisman = Talisman(app,
         ]
     },
     force_https=True
-)
-
-# Update session configuration
-app.config.update(
-    SESSION_COOKIE_SECURE=True,
-    SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='Lax',
-    PERMANENT_SESSION_LIFETIME=timedelta(days=7)
 )
 
 # Add SSL requirement for Supabase
@@ -1243,6 +1247,11 @@ def toggle_like(game_id):
         'action': action,
         'like_count': game.like_count()
     })
+
+# Add this new function to handle CSRF errors
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    return render_template('errors/400.html', message="CSRF token validation failed. Please try again."), 400
 
 # Initialize database
 with app.app_context():
