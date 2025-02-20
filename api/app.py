@@ -43,15 +43,18 @@ if not app.config['SECRET_KEY']:
     raise ValueError("No SECRET_KEY set for Flask application")
 
 # Make sure DATABASE_URL is set
-if not os.environ.get('DATABASE_URL'):
+database_url = os.environ.get('DATABASE_URL')
+if not database_url:
     raise ValueError("No DATABASE_URL set for Flask application")
 
+print(f"Raw DATABASE_URL: {database_url}")  # Debug print
+
 # Configure SQLAlchemy for Postgres
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql://', 1)
 
-print(f"Using database: {app.config['SQLALCHEMY_DATABASE_URI']}")  # Debug print
+print(f"Final SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")  # Debug print
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
