@@ -24,8 +24,18 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import logging
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
-app = Flask(__name__)
+# Get the root directory
+ROOT_DIR = Path(__file__).resolve().parent.parent
+
+app = Flask(__name__,
+           template_folder=str(ROOT_DIR / 'templates'),
+           static_folder=str(ROOT_DIR / 'static'))
+
+# Debug prints
+print(f"Template folder: {app.template_folder}")
+print(f"Static folder: {app.static_folder}")
 
 # Add this before other config
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
@@ -1286,6 +1296,7 @@ limiter = Limiter(
 @app.route('/login', methods=['POST'])
 def login_post():
     # ... existing login code
+    pass  # Add this if the function is empty
 
 def maintenance_mode():
     return os.environ.get('MAINTENANCE_MODE', 'false').lower() == 'true'

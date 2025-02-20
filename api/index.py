@@ -1,6 +1,6 @@
-from api.app import app
 import sys
 import traceback
+from api.app import app
 
 @app.errorhandler(500)
 def handle_500_error(e):
